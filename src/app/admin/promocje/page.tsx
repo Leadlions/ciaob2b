@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatPrice } from "@/lib/constants";
 import { Badge, EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import { IconPromo } from "@/components/icons";
+import { PendingButton } from "@/components/pending-button";
 import { togglePromotionActive, deletePromotion } from "./actions";
 
 export default async function PromotionsPage() {
@@ -94,21 +95,21 @@ export default async function PromotionsPage() {
                             name="next"
                             value={(!p.is_active).toString()}
                           />
-                          <button
-                            type="submit"
+                          <PendingButton
                             className="rounded-lg px-2 py-1 text-foreground/60 hover:bg-muted"
+                            pendingText="…"
                           >
                             {p.is_active ? "Wyłącz" : "Włącz"}
-                          </button>
+                          </PendingButton>
                         </form>
                         <form action={deletePromotion}>
                           <input type="hidden" name="id" value={p.id} />
-                          <button
-                            type="submit"
+                          <PendingButton
                             className="rounded-lg px-2 py-1 text-foreground/40 hover:bg-brand-50 hover:text-brand"
+                            pendingText="…"
                           >
                             Usuń
-                          </button>
+                          </PendingButton>
                         </form>
                       </div>
                     </td>

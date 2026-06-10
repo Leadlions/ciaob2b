@@ -12,6 +12,7 @@ import {
 import { Badge, EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import { IconCart } from "@/components/icons";
 import { getEffectiveClientId } from "@/lib/view-as";
+import { PendingButton } from "@/components/pending-button";
 import {
   toggleRecurringActive,
   deleteRecurring,
@@ -152,21 +153,21 @@ export default async function OrdersPage({
                         name="next"
                         value={(!r.is_active).toString()}
                       />
-                      <button
-                        type="submit"
+                      <PendingButton
                         className="rounded-lg px-2 py-1 text-sm text-foreground/60 hover:bg-muted"
+                        pendingText="…"
                       >
                         {r.is_active ? "Wstrzymaj" : "Wznów"}
-                      </button>
+                      </PendingButton>
                     </form>
                     <form action={deleteRecurring}>
                       <input type="hidden" name="id" value={r.id} />
-                      <button
-                        type="submit"
+                      <PendingButton
                         className="rounded-lg px-2 py-1 text-sm text-foreground/40 hover:bg-brand-50 hover:text-brand"
+                        pendingText="…"
                       >
                         Usuń
-                      </button>
+                      </PendingButton>
                     </form>
                   </div>
                 </div>

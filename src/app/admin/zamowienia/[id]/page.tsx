@@ -17,6 +17,7 @@ import {
   btnPrimary,
   btnSecondary,
 } from "@/components/ui";
+import { PendingButton } from "@/components/pending-button";
 import { updateOrderStatus, generateWz, deleteWz } from "../actions";
 import type { Enums } from "@/lib/database.types";
 
@@ -167,9 +168,9 @@ export default async function AdminOrderDetailPage({
               ))}
             </Select>
           </div>
-          <button type="submit" className={btnPrimary}>
+          <PendingButton className={btnPrimary} pendingText="Zapisywanie…">
             Zapisz status
-          </button>
+          </PendingButton>
         </form>
       </Card>
 
@@ -189,21 +190,21 @@ export default async function AdminOrderDetailPage({
             </span>
             <form action={deleteWz} className="ml-auto">
               <input type="hidden" name="id" value={order.id} />
-              <button
-                type="submit"
+              <PendingButton
                 className="rounded-lg px-2 py-1 text-sm text-foreground/40 hover:bg-brand-50 hover:text-brand"
+                pendingText="Usuwanie…"
               >
                 Usuń WZ
-              </button>
+              </PendingButton>
             </form>
           </div>
         ) : (
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <form action={generateWz}>
               <input type="hidden" name="id" value={order.id} />
-              <button type="submit" className={btnPrimary}>
+              <PendingButton className={btnPrimary} pendingText="Generowanie…">
                 Generuj WZ
-              </button>
+              </PendingButton>
             </form>
             <span className="text-xs text-foreground/50">
               Numer zostanie nadany automatycznie. WZ tworzy się też samo przy

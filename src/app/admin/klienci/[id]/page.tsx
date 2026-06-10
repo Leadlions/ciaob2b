@@ -9,6 +9,7 @@ import {
   btnPrimary,
 } from "@/components/ui";
 import { ClientForm } from "@/components/client-form";
+import { PendingButton } from "@/components/pending-button";
 import { formatPrice } from "@/lib/constants";
 import { setClientPrice, removeClientPrice } from "../actions";
 
@@ -78,12 +79,12 @@ export default async function EditClientPage({
                         <form action={removeClientPrice}>
                           <input type="hidden" name="id" value={pr.id} />
                           <input type="hidden" name="client_id" value={client.id} />
-                          <button
-                            type="submit"
+                          <PendingButton
                             className="rounded-lg px-2 py-1 text-foreground/40 hover:bg-brand-50 hover:text-brand"
+                            pendingText="…"
                           >
                             Usuń
-                          </button>
+                          </PendingButton>
                         </form>
                       </td>
                     </tr>
@@ -132,9 +133,9 @@ export default async function EditClientPage({
                 />
               </Field>
             </div>
-            <button type="submit" className={btnPrimary}>
+            <PendingButton className={btnPrimary} pendingText="Zapisywanie…">
               Ustaw cenę
-            </button>
+            </PendingButton>
           </form>
         </Card>
       </div>

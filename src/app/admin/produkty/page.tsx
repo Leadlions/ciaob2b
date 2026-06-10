@@ -12,6 +12,7 @@ import {
   PageHeader,
 } from "@/components/ui";
 import { IconProducts } from "@/components/icons";
+import { PendingButton } from "@/components/pending-button";
 import { toggleProductActive } from "./actions";
 import type { Enums } from "@/lib/database.types";
 
@@ -140,12 +141,12 @@ export default async function ProductsPage({
                           name="next"
                           value={(!p.is_active).toString()}
                         />
-                        <button
-                          type="submit"
+                        <PendingButton
                           className="rounded-lg px-2 py-1 text-foreground/60 hover:bg-muted"
+                          pendingText="…"
                         >
                           {p.is_active ? "Dezaktywuj" : "Aktywuj"}
-                        </button>
+                        </PendingButton>
                       </form>
                     </div>
                   </td>

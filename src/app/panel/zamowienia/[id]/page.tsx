@@ -11,6 +11,7 @@ import {
   orderRef,
 } from "@/lib/constants";
 import { Badge, Card, PageHeader, btnDanger, btnSecondary } from "@/components/ui";
+import { PendingButton } from "@/components/pending-button";
 import { cancelOrder } from "../actions";
 
 export default async function OrderDetailPage({
@@ -148,9 +149,9 @@ export default async function OrderDetailPage({
       {canCancel && (
         <form action={cancelOrder}>
           <input type="hidden" name="id" value={order.id} />
-          <button type="submit" className={btnDanger}>
+          <PendingButton className={btnDanger} pendingText="Anulowanie…">
             Anuluj zamówienie
-          </button>
+          </PendingButton>
         </form>
       )}
     </div>
