@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Logo } from "./logo";
 import { Sidebar, type NavItem } from "./sidebar";
 import { SignOutButton } from "./sign-out-button";
+import { FadeIn } from "./fade-in";
 
 export function AppShell({
   items,
@@ -37,7 +38,9 @@ export function AppShell({
           )}
           <SignOutButton />
         </header>
-        <main className="flex-1 p-6 md:p-8">{children}</main>
+        <main className="flex-1 p-6 md:p-8">
+          <FadeIn>{children}</FadeIn>
+        </main>
       </div>
     </div>
   );
