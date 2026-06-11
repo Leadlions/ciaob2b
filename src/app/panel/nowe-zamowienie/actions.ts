@@ -47,6 +47,9 @@ export async function submitOrder(
   if (!profile || !clientId)
     return { error: "Brak przypisanej firmy (lub nie wybrano firmy w podglądzie)." };
 
+  if (!formData.get("accept_terms"))
+    return { error: "Aby złożyć zamówienie, zaakceptuj regulamin." };
+
   const mode = String(formData.get("mode") ?? "jednorazowe");
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const items = parseItems(formData);

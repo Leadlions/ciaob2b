@@ -69,6 +69,7 @@ export function OrderCreator({
   const [excluded, setExcluded] = useState<string[]>([]);
   const [exclInput, setExclInput] = useState("");
   const [notes, setNotes] = useState("");
+  const [accepted, setAccepted] = useState(false);
 
   const visible = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -418,14 +419,41 @@ export function OrderCreator({
             value={JSON.stringify(excluded)}
           />
 
+          <input
+            type="hidden"
+            name="accept_terms"
+            value={accepted ? "1" : ""}
+          />
+
+          <label className="mb-3 flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-brand"
+            />
+            <span>
+              Akceptuję{" "}
+              <a
+                href="/regulamin"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand underline"
+              >
+                regulamin
+              </a>
+              .
+            </span>
+          </label>
+
           {state.error && (
             <p className="mb-3 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-dark">
               {state.error}
             </p>
           )}
 
-          <SubmitButton pendingText="Zapisywanie…">
-            {mode === "cykliczne" ? "Utwórz harmonogram" : "Złóż zamówienie"}
+          <SubmitButton pendingText="Zapisywanie…" disabled={!accepted}>
+            Zamawiam z obowiązkiem zapłaty
           </SubmitButton>
         </div>
       </div>
