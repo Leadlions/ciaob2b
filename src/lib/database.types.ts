@@ -16,16 +16,22 @@ export type Database = {
         Row: {
           id: number
           order_cutoff_hour: number
+          report_email_wz: string | null
+          report_email_prod: string | null
           updated_at: string
         }
         Insert: {
           id?: number
           order_cutoff_hour?: number
+          report_email_wz?: string | null
+          report_email_prod?: string | null
           updated_at?: string
         }
         Update: {
           id?: number
           order_cutoff_hour?: number
+          report_email_wz?: string | null
+          report_email_prod?: string | null
           updated_at?: string
         }
         Relationships: []

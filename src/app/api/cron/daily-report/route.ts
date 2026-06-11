@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generateDailyReports } from "@/lib/reports";
 import { sendReportEmail } from "@/lib/email";
-import { getCutoffHour } from "@/lib/settings";
+import { getCutoffHour, getReportEmails } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -78,12 +78,16 @@ async function handle(req: NextRequest) {
       });
     }
 
-    await sendReportEmail(reports);
+    const emails = await getReportEmails(supabase);
+    const sent = await sendReportEmail(reports, emails);
     return NextResponse.json({
       ok: true,
       date: dateStr,
       orders: reports.orderCount,
       products: reports.productLineCount,
+      wzSent: sent.wzSent,
+      prodSent: sent.prodSent,
+      skipped: sent.skipped,
     });
   } catch (e) {
     return NextResponse.json(
