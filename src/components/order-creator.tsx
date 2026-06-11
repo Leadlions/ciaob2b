@@ -43,6 +43,16 @@ export function OrderCreator({
 }) {
   const [state, action] = useActionState(submitOrder, initial);
 
+  // Kliknięcie w dowolne miejsce pola daty otwiera kalendarz (nie tylko ikonka).
+  const openPicker = (e: React.MouseEvent<HTMLInputElement>) => {
+    const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+    try {
+      el.showPicker?.();
+    } catch {
+      /* showPicker niedostępny — zostaje natywne zachowanie */
+    }
+  };
+
   // koszyk
   const [qty, setQty] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
@@ -227,6 +237,7 @@ export function OrderCreator({
                 type="date"
                 min={minDate}
                 value={singleDate}
+                onClick={openPicker}
                 onChange={(e) => setSingleDate(e.target.value)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
               />
@@ -266,6 +277,7 @@ export function OrderCreator({
                     type="date"
                     min={minDate}
                     value={recurFrom}
+                    onClick={openPicker}
                     onChange={(e) => setRecurFrom(e.target.value)}
                     className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm outline-none focus:border-brand"
                   />
@@ -276,6 +288,7 @@ export function OrderCreator({
                     type="date"
                     min={minDate}
                     value={recurTo}
+                    onClick={openPicker}
                     onChange={(e) => setRecurTo(e.target.value)}
                     className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm outline-none focus:border-brand"
                   />
