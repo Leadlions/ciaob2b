@@ -63,8 +63,13 @@ async function handle(req: NextRequest) {
 
     // Podgląd/pobranie konkretnego raportu (bez wysyłki maila).
     const download = url.searchParams.get("download");
-    if (download === "wz" || download === "prod") {
-      const pdf = download === "wz" ? reports.wzPdf : reports.prodPdf;
+    if (download === "wz" || download === "prod" || download === "sales") {
+      const pdf =
+        download === "wz"
+          ? reports.wzPdf
+          : download === "sales"
+            ? reports.salesPdf
+            : reports.prodPdf;
       return new NextResponse(Buffer.from(pdf), {
         headers: {
           "content-type": "application/pdf",

@@ -12,7 +12,7 @@ const NAV: NavItem[] = [
   { label: "Promocje", href: "/admin/promocje", ready: true, icon: "promo" },
   { label: "Dokumenty WZ", href: "/admin/dokumenty", ready: true, icon: "doc" },
   { label: "Faktury", href: "/admin/faktury", icon: "invoice" },
-  { label: "Raporty", href: "/admin/raporty", icon: "reports" },
+  { label: "Raporty", href: "/admin/raporty", ready: true, icon: "reports" },
   { label: "Podgląd klienta", href: "/panel", ready: true, icon: "eye" },
   { label: "Ustawienia", href: "/admin/ustawienia", ready: true, icon: "settings" },
 ];

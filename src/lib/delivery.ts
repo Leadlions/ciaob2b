@@ -20,6 +20,13 @@ function warsawToday(now: Date): string {
   }).format(now); // YYYY-MM-DD
 }
 
+// Data w strefie Europe/Warsaw przesunięta o offsetDays (YYYY-MM-DD).
+export function warsawDate(offsetDays = 0, now: Date = new Date()): string {
+  const base = new Date(`${warsawToday(now)}T12:00:00Z`);
+  base.setUTCDate(base.getUTCDate() + offsetDays);
+  return base.toISOString().slice(0, 10);
+}
+
 // Najwcześniejsza możliwa data dostawy (YYYY-MM-DD):
 //  - przed godziną graniczną (czas polski) → jutro,
 //  - od godziny granicznej → pojutrze (minęła granica na jutro).

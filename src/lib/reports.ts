@@ -3,7 +3,7 @@ import path from "path";
 import { PDFDocument, PDFFont, PDFPage, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { DELIVERY_SLOT_LABELS, formatDate } from "@/lib/constants";
+import { DELIVERY_SLOT_LABELS, formatDate, formatPrice } from "@/lib/constants";
 
 const A4_W = 595.28;
 const A4_H = 841.89;
@@ -198,12 +198,64 @@ async function buildProductionPdf(
   return s.doc.save();
 }
 
+// Raport sprzedaży — wartość zamówień per klient na dany dzień.
+async function buildSalesPdf(
+  rows: { name: string; value: number }[],
+  total: number,
+  dateStr: string,
+): Promise<Uint8Array> {
+  const s = await makeSheet();
+  header(
+    s,
+    "Raport sprzedaży",
+    `Dostawy na dzień ${formatDate(dateStr)} · klientów: ${rows.length}`,
+  );
+
+  ensure(s, 18);
+  line(s, "Klient", { size: 9, bold: true, color: GREY, gap: 0 });
+  rightText(s, "Wartość", A4_W - MARGIN, s.y + 9, { size: 9, bold: true, color: GREY });
+  s.y -= 6;
+  hr(s, rgb(0.1, 0.1, 0.1));
+
+  if (rows.length === 0) line(s, "Brak sprzedaży na ten dzień.", { color: GREY });
+
+  for (const r of rows) {
+    ensure(s, 16);
+    const baseline = s.y - 11;
+    s.page.drawText(clean(r.name), {
+      x: MARGIN,
+      y: baseline,
+      size: 11,
+      font: s.reg,
+      color: BLACK,
+    });
+    rightText(s, formatPrice(r.value), A4_W - MARGIN, baseline, { size: 11 });
+    s.y -= 16;
+    s.page.drawLine({
+      start: { x: MARGIN, y: s.y + 4 },
+      end: { x: A4_W - MARGIN, y: s.y + 4 },
+      thickness: 0.4,
+      color: rgb(0.9, 0.88, 0.83),
+    });
+  }
+
+  s.y -= 6;
+  hr(s, rgb(0.1, 0.1, 0.1));
+  const baseline = s.y - 12;
+  s.page.drawText("RAZEM", { x: MARGIN, y: baseline, size: 12, font: s.bold, color: BLACK });
+  rightText(s, formatPrice(total), A4_W - MARGIN, baseline, { size: 12, bold: true, color: BRAND });
+
+  return s.doc.save();
+}
+
 export type DailyReports = {
   dateStr: string;
   orderCount: number;
   productLineCount: number;
+  salesTotal: number;
   wzPdf: Uint8Array;
   prodPdf: Uint8Array;
+  salesPdf: Uint8Array;
 };
 
 // Buduje oba raporty dla zamówień z dostawą w podanym dniu (YYYY-MM-DD).
@@ -225,9 +277,9 @@ export async function generateDailyReports(
     orderIds.length
       ? supabase
           .from("order_items")
-          .select("order_id, product_id, quantity")
+          .select("order_id, product_id, quantity, unit_price")
           .in("order_id", orderIds)
-      : Promise.resolve({ data: [] as { order_id: string; product_id: string; quantity: number }[] }),
+      : Promise.resolve({ data: [] as { order_id: string; product_id: string; quantity: number; unit_price: number }[] }),
     clientIds.length
       ? supabase.from("clients").select("id, name").in("id", clientIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -240,8 +292,12 @@ export async function generateDailyReports(
 
   const prodMap = new Map((products ?? []).map((p) => [p.id, p]));
   const clientMap = new Map((clients ?? []).map((c) => [c.id, c.name]));
+  const orderClient = new Map(
+    (orders ?? []).map((o) => [o.id, clientMap.get(o.client_id) ?? "—"]),
+  );
   const itemsByOrder = new Map<string, { name: string; unit: string; quantity: number }[]>();
   const totals = new Map<string, { name: string; unit: string; quantity: number }>();
+  const salesByClient = new Map<string, number>();
 
   for (const it of items ?? []) {
     const p = prodMap.get(it.product_id);
@@ -255,6 +311,12 @@ export async function generateDailyReports(
     const cur = totals.get(key);
     if (cur) cur.quantity += it.quantity;
     else totals.set(key, { name, unit, quantity: it.quantity });
+
+    const cname = orderClient.get(it.order_id) ?? "—";
+    salesByClient.set(
+      cname,
+      (salesByClient.get(cname) ?? 0) + it.quantity * (it.unit_price ?? 0),
+    );
   }
 
   const orderData: OrderData[] = (orders ?? []).map((o) => ({
@@ -269,16 +331,24 @@ export async function generateDailyReports(
     a.name.localeCompare(b.name, "pl"),
   );
 
-  const [wzPdf, prodPdf] = await Promise.all([
+  const salesArr = [...salesByClient.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+  const salesTotal = salesArr.reduce((s, x) => s + x.value, 0);
+
+  const [wzPdf, prodPdf, salesPdf] = await Promise.all([
     buildWzPdf(orderData, dateStr),
     buildProductionPdf(totalsArr, dateStr),
+    buildSalesPdf(salesArr, salesTotal, dateStr),
   ]);
 
   return {
     dateStr,
     orderCount: orderData.length,
     productLineCount: totalsArr.length,
+    salesTotal,
     wzPdf,
     prodPdf,
+    salesPdf,
   };
 }
