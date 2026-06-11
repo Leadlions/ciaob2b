@@ -21,10 +21,13 @@ function warsawToday(now: Date): string {
 }
 
 // Najwcześniejsza możliwa data dostawy (YYYY-MM-DD):
-//  - przed 18:00 czasu polskiego → jutro,
-//  - od 18:00 → pojutrze (minęła granica na jutro).
-export function earliestDeliveryDate(now: Date = new Date()): string {
-  const addDays = warsawHour(now) < ORDER_CUTOFF_HOUR ? 1 : 2;
+//  - przed godziną graniczną (czas polski) → jutro,
+//  - od godziny granicznej → pojutrze (minęła granica na jutro).
+export function earliestDeliveryDate(
+  cutoffHour: number = ORDER_CUTOFF_HOUR,
+  now: Date = new Date(),
+): string {
+  const addDays = warsawHour(now) < cutoffHour ? 1 : 2;
   const base = new Date(`${warsawToday(now)}T12:00:00Z`);
   base.setUTCDate(base.getUTCDate() + addDays);
   return base.toISOString().slice(0, 10);

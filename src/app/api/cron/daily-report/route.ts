@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generateDailyReports } from "@/lib/reports";
 import { sendReportEmail } from "@/lib/email";
+import { getCutoffHour } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -43,17 +44,20 @@ async function handle(req: NextRequest) {
 
   const test = url.searchParams.get("test") === "1";
 
-  // Wysyłamy tylko o 18:xx czasu polskiego (cron odpala 16:30 i 17:30 UTC — DST).
-  if (!test && warsawHour() !== 18) {
-    return NextResponse.json({ skipped: true, warsawHour: warsawHour() });
-  }
-
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
+
+    // Wysyłamy tylko o godzinie granicznej (czasu polskiego). Cron odpala co godzinę
+    // o :30 — strażnik decyduje, kiedy faktycznie wysłać. Tryb test pomija strażnik.
+    const cutoff = await getCutoffHour(supabase);
+    if (!test && warsawHour() !== cutoff) {
+      return NextResponse.json({ skipped: true, warsawHour: warsawHour(), cutoff });
+    }
+
     const dateStr = url.searchParams.get("date") ?? tomorrowWarsaw();
     const reports = await generateDailyReports(supabase, dateStr);
 

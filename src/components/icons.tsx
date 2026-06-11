@@ -127,9 +127,19 @@ export function IconEye(p: IconProps) {
   );
 }
 
+export function IconSettings(p: IconProps) {
+  return (
+    <svg {...base(p)}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-1.1V4.5a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 .3 1.8 1.6 1.6 0 0 0 1.4.9h.1a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.4.9z" />
+    </svg>
+  );
+}
+
 export const ICONS = {
   dashboard: IconDashboard,
   eye: IconEye,
+  settings: IconSettings,
   catalog: IconCatalog,
   cart: IconCart,
   clients: IconClients,

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
 import { earliestDeliveryDate } from "@/lib/delivery";
+import { getCutoffHour } from "@/lib/settings";
 import { PageHeader } from "@/components/ui";
 import { OrderCreator, type ProductItem } from "@/components/order-creator";
 
@@ -88,7 +89,8 @@ export default async function NewOrderPage() {
     }).effective,
   }));
 
-  const minDate = earliestDeliveryDate();
+  const cutoffHour = await getCutoffHour(supabase);
+  const minDate = earliestDeliveryDate(cutoffHour);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -104,7 +106,7 @@ export default async function NewOrderPage() {
         title="Utwórz zamówienie"
         description="Wybierz produkty, a następnie dostawę jednorazową lub cykliczną."
       />
-      <OrderCreator products={items} minDate={minDate} />
+      <OrderCreator products={items} minDate={minDate} cutoffHour={cutoffHour} />
     </div>
   );
 }

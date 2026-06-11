@@ -14,6 +14,7 @@ const NAV: NavItem[] = [
   { label: "Faktury", href: "/admin/faktury", icon: "invoice" },
   { label: "Raporty", href: "/admin/raporty", icon: "reports" },
   { label: "Podgląd klienta", href: "/panel", ready: true, icon: "eye" },
+  { label: "Ustawienia", href: "/admin/ustawienia", ready: true, icon: "settings" },
 ];
 
 export default async function AdminLayout({

@@ -35,9 +35,11 @@ const initial: CreateOrderState = { error: null };
 export function OrderCreator({
   products,
   minDate,
+  cutoffHour = 18,
 }: {
   products: ProductItem[];
   minDate: string;
+  cutoffHour?: number;
 }) {
   const [state, action] = useActionState(submitOrder, initial);
 
@@ -207,7 +209,11 @@ export function OrderCreator({
           </div>
 
           <p className="mb-3 rounded-lg bg-brand-50 px-3 py-1.5 text-xs text-brand-dark">
-            Zamówienia na kolejny dzień przyjmujemy do <strong>18:00</strong>.
+            Zamówienia na kolejny dzień przyjmujemy do{" "}
+            <strong>
+              {String(cutoffHour).padStart(2, "0")}:00
+            </strong>
+            .
           </p>
 
           {mode === "jednorazowe" ? (

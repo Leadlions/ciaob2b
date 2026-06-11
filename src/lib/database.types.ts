@@ -12,6 +12,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      settings: {
+        Row: {
+          id: number
+          order_cutoff_hour: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          order_cutoff_hour?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          order_cutoff_hour?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       client_prices: {
         Row: {
           client_id: string

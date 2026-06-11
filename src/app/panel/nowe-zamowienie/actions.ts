@@ -8,6 +8,7 @@ import { getSessionProfile } from "@/lib/auth";
 import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
 import { earliestDeliveryDate } from "@/lib/delivery";
+import { getCutoffHour } from "@/lib/settings";
 import { DELIVERY_SLOTS, formatDate } from "@/lib/constants";
 import type { Enums } from "@/lib/database.types";
 
@@ -51,10 +52,10 @@ export async function submitOrder(
   const items = parseItems(formData);
   if (items.length === 0) return { error: "Dodaj przynajmniej jeden produkt." };
 
-  const earliest = earliestDeliveryDate();
-  const cutoffMsg = `Najwcześniejsza możliwa data to ${formatDate(earliest)} — zamówienia na kolejny dzień przyjmujemy do godz. 18:00.`;
-
   const supabase = await createClient();
+  const cutoffHour = await getCutoffHour(supabase);
+  const earliest = earliestDeliveryDate(cutoffHour);
+  const cutoffMsg = `Najwcześniejsza możliwa data to ${formatDate(earliest)} — zamówienia na kolejny dzień przyjmujemy do godz. ${String(cutoffHour).padStart(2, "0")}:00.`;
 
   const { data: client } = await supabase
     .from("clients")
