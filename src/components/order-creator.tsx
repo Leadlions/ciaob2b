@@ -206,6 +206,10 @@ export function OrderCreator({
             </button>
           </div>
 
+          <p className="mb-3 rounded-lg bg-brand-50 px-3 py-1.5 text-xs text-brand-dark">
+            Zamówienia na kolejny dzień przyjmujemy do <strong>18:00</strong>.
+          </p>
+
           {mode === "jednorazowe" ? (
             <div className="mb-3">
               <label

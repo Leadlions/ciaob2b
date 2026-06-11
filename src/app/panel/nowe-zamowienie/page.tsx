@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
+import { earliestDeliveryDate } from "@/lib/delivery";
 import { PageHeader } from "@/components/ui";
 import { OrderCreator, type ProductItem } from "@/components/order-creator";
 
@@ -87,7 +88,7 @@ export default async function NewOrderPage() {
     }).effective,
   }));
 
-  const minDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const minDate = earliestDeliveryDate();
 
   return (
     <div className="mx-auto max-w-6xl">

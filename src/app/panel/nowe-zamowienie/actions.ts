@@ -7,7 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionProfile } from "@/lib/auth";
 import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
-import { DELIVERY_SLOTS } from "@/lib/constants";
+import { earliestDeliveryDate } from "@/lib/delivery";
+import { DELIVERY_SLOTS, formatDate } from "@/lib/constants";
 import type { Enums } from "@/lib/database.types";
 
 export type CreateOrderState = { error: string | null };
@@ -49,6 +50,9 @@ export async function submitOrder(
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const items = parseItems(formData);
   if (items.length === 0) return { error: "Dodaj przynajmniej jeden produkt." };
+
+  const earliest = earliestDeliveryDate();
+  const cutoffMsg = `Najwcześniejsza możliwa data to ${formatDate(earliest)} — zamówienia na kolejny dzień przyjmujemy do godz. 18:00.`;
 
   const supabase = await createClient();
 
@@ -101,6 +105,7 @@ export async function submitOrder(
     if (weekdays.length === 0)
       return { error: "Wybierz przynajmniej jeden dzień tygodnia." };
     if (!start_date) return { error: "Podaj datę początku." };
+    if (start_date < earliest) return { error: cutoffMsg };
     if (!DELIVERY_SLOTS.includes(slot))
       return { error: "Wybierz godzinę dostawy." };
     if (end_date && end_date < start_date)
@@ -147,6 +152,7 @@ export async function submitOrder(
     formData.get("delivery_slot") ?? "",
   ) as Enums<"delivery_slot">;
   if (!delivery_date) return { error: "Wybierz datę dostawy." };
+  if (delivery_date < earliest) return { error: cutoffMsg };
   if (!DELIVERY_SLOTS.includes(delivery_slot))
     return { error: "Wybierz godzinę dostawy." };
 
