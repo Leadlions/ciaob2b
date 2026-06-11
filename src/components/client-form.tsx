@@ -53,6 +53,23 @@ export function ClientForm({ client }: { client?: Tables<"clients"> }) {
           </Field>
         </div>
 
+        <Field
+          label="Minimum kwotowe zamówienia (zł)"
+          htmlFor="min_order_value"
+          hint="Najniższa wartość koszyka, jaką ten klient może zamówić. 0 lub puste = brak minimum."
+        >
+          <Input
+            id="min_order_value"
+            name="min_order_value"
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            defaultValue={client?.min_order_value ? client.min_order_value : ""}
+            placeholder="0"
+          />
+        </Field>
+
         <Field label="Adres" htmlFor="address">
           <Textarea
             id="address"

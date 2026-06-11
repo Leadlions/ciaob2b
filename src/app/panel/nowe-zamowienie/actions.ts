@@ -9,7 +9,7 @@ import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
 import { earliestDeliveryDate } from "@/lib/delivery";
 import { getCutoffHour } from "@/lib/settings";
-import { DELIVERY_SLOTS, formatDate } from "@/lib/constants";
+import { DELIVERY_SLOTS, formatDate, formatPrice } from "@/lib/constants";
 import type { Enums } from "@/lib/database.types";
 
 export type CreateOrderState = { error: string | null };
@@ -62,7 +62,7 @@ export async function submitOrder(
 
   const { data: client } = await supabase
     .from("clients")
-    .select("discount_pct, orders_suspended")
+    .select("discount_pct, orders_suspended, min_order_value")
     .eq("id", clientId)
     .single();
   if (!client) return { error: "Nie znaleziono firmy." };
@@ -85,6 +85,50 @@ export async function submitOrder(
         error: `„${p.name}" — minimalna ilość to ${p.min_order_qty} ${p.unit}.`,
       };
   }
+
+  // ====== Wycena koszyka (wspólna) + walidacja minimum kwotowego ======
+  const today = new Date().toISOString().slice(0, 10);
+  const [{ data: cprices }, { data: promos }] = await Promise.all([
+    supabase
+      .from("client_prices")
+      .select("product_id, custom_price")
+      .eq("client_id", clientId)
+      .in("product_id", ids),
+    supabase
+      .from("promotions")
+      .select("product_id, promo_price")
+      .eq("is_active", true)
+      .lte("start_date", today)
+      .gte("end_date", today)
+      .in("product_id", ids),
+  ]);
+  const customMap = new Map(
+    (cprices ?? []).map((c) => [c.product_id, c.custom_price]),
+  );
+  const promoMap = new Map<string, number>();
+  for (const pr of promos ?? []) {
+    const cur = promoMap.get(pr.product_id);
+    if (cur == null || pr.promo_price < cur) promoMap.set(pr.product_id, pr.promo_price);
+  }
+
+  const orderItems = items.map((it) => {
+    const p = prodMap.get(it.product_id)!;
+    const price = computePrice({
+      basePrice: p.base_price,
+      discountPct: client.discount_pct,
+      customPrice: customMap.get(p.id) ?? null,
+      promoPrice: promoMap.get(p.id) ?? null,
+    });
+    return { product_id: p.id, quantity: Number(it.quantity), unit_price: price.effective };
+  });
+  const cartTotal = orderItems.reduce(
+    (s, oi) => s + oi.unit_price * oi.quantity,
+    0,
+  );
+  if (client.min_order_value > 0 && cartTotal < client.min_order_value)
+    return {
+      error: `Minimalna wartość zamówienia dla Twojej firmy to ${formatPrice(client.min_order_value)} (wartość koszyka: ${formatPrice(cartTotal)}).`,
+    };
 
   // ====== TRYB CYKLICZNY ======
   if (mode === "cykliczne") {
@@ -159,41 +203,6 @@ export async function submitOrder(
   if (delivery_date < earliest) return { error: cutoffMsg };
   if (!DELIVERY_SLOTS.includes(delivery_slot))
     return { error: "Wybierz godzinę dostawy." };
-
-  const today = new Date().toISOString().slice(0, 10);
-  const [{ data: cprices }, { data: promos }] = await Promise.all([
-    supabase
-      .from("client_prices")
-      .select("product_id, custom_price")
-      .eq("client_id", clientId)
-      .in("product_id", ids),
-    supabase
-      .from("promotions")
-      .select("product_id, promo_price")
-      .eq("is_active", true)
-      .lte("start_date", today)
-      .gte("end_date", today)
-      .in("product_id", ids),
-  ]);
-  const customMap = new Map(
-    (cprices ?? []).map((c) => [c.product_id, c.custom_price]),
-  );
-  const promoMap = new Map<string, number>();
-  for (const pr of promos ?? []) {
-    const cur = promoMap.get(pr.product_id);
-    if (cur == null || pr.promo_price < cur) promoMap.set(pr.product_id, pr.promo_price);
-  }
-
-  const orderItems = items.map((it) => {
-    const p = prodMap.get(it.product_id)!;
-    const price = computePrice({
-      basePrice: p.base_price,
-      discountPct: client.discount_pct,
-      customPrice: customMap.get(p.id) ?? null,
-      promoPrice: promoMap.get(p.id) ?? null,
-    });
-    return { product_id: p.id, quantity: Number(it.quantity), unit_price: price.effective };
-  });
 
   const { data: order, error: oErr } = await supabase
     .from("orders")

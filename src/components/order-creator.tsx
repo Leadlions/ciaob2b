@@ -36,10 +36,12 @@ export function OrderCreator({
   products,
   minDate,
   cutoffHour = 18,
+  minOrderValue = 0,
 }: {
   products: ProductItem[];
   minDate: string;
   cutoffHour?: number;
+  minOrderValue?: number;
 }) {
   const [state, action] = useActionState(submitOrder, initial);
 
@@ -85,6 +87,7 @@ export function OrderCreator({
     [products, qty],
   );
   const total = cart.reduce((s, x) => s + x.q * x.p.price, 0);
+  const belowMin = minOrderValue > 0 && total < minOrderValue;
   const items = cart.map((x) => ({ product_id: x.p.id, quantity: x.q }));
   const setQ = (id: string, v: number) =>
     setQty((m) => ({ ...m, [id]: v < 0 ? 0 : v }));
@@ -400,6 +403,15 @@ export function OrderCreator({
                   <span>Razem {mode === "cykliczne" ? "(za 1 dostawę)" : ""}</span>
                   <span>{formatPrice(total)}</span>
                 </div>
+                {minOrderValue > 0 && (
+                  <p
+                    className={`mt-1 text-xs ${belowMin ? "text-brand-dark" : "text-foreground/50"}`}
+                  >
+                    {belowMin
+                      ? `Minimum zamówienia: ${formatPrice(minOrderValue)} — brakuje ${formatPrice(minOrderValue - total)}.`
+                      : `Minimum zamówienia: ${formatPrice(minOrderValue)} ✓`}
+                  </p>
+                )}
               </>
             )}
           </div>
@@ -452,7 +464,7 @@ export function OrderCreator({
             </p>
           )}
 
-          <SubmitButton pendingText="Zapisywanie…" disabled={!accepted}>
+          <SubmitButton pendingText="Zapisywanie…" disabled={!accepted || belowMin}>
             Zamawiam z obowiązkiem zapłaty
           </SubmitButton>
         </div>

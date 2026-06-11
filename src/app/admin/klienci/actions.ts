@@ -28,12 +28,18 @@ export async function saveClient(
   const internal_notes =
     String(formData.get("internal_notes") ?? "").trim() || null;
   const discount_pct = parseNum(formData.get("discount_pct"));
+  const min_order_value_raw = String(formData.get("min_order_value") ?? "").trim();
+  const min_order_value = min_order_value_raw
+    ? parseNum(formData.get("min_order_value"))
+    : 0;
   const orders_suspended = formData.get("orders_suspended") === "on";
   const is_active = formData.get("is_active") === "on";
 
   if (!name) return { error: "Podaj nazwę firmy." };
   if (Number.isNaN(discount_pct) || discount_pct < 0 || discount_pct > 100)
     return { error: "Rabat ogólny musi być liczbą od 0 do 100." };
+  if (Number.isNaN(min_order_value) || min_order_value < 0)
+    return { error: "Minimum kwotowe musi być liczbą ≥ 0." };
 
   const supabase = await createClient();
 
@@ -45,6 +51,7 @@ export async function saveClient(
     contact_phone,
     internal_notes,
     discount_pct,
+    min_order_value,
     orders_suspended,
     is_active,
   };

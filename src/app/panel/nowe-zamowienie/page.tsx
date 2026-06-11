@@ -30,7 +30,7 @@ export default async function NewOrderPage() {
     await Promise.all([
       supabase
         .from("clients")
-        .select("discount_pct, orders_suspended")
+        .select("discount_pct, orders_suspended, min_order_value")
         .eq("id", clientId)
         .single(),
       supabase
@@ -106,7 +106,12 @@ export default async function NewOrderPage() {
         title="Utwórz zamówienie"
         description="Wybierz produkty, a następnie dostawę jednorazową lub cykliczną."
       />
-      <OrderCreator products={items} minDate={minDate} cutoffHour={cutoffHour} />
+      <OrderCreator
+        products={items}
+        minDate={minDate}
+        cutoffHour={cutoffHour}
+        minOrderValue={client?.min_order_value ?? 0}
+      />
     </div>
   );
 }

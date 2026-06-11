@@ -85,6 +85,7 @@ export type Database = {
           id: string
           internal_notes: string | null
           is_active: boolean
+          min_order_value: number
           name: string
           nip: string | null
           orders_suspended: boolean
@@ -98,6 +99,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           is_active?: boolean
+          min_order_value?: number
           name: string
           nip?: string | null
           orders_suspended?: boolean
@@ -111,6 +113,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           is_active?: boolean
+          min_order_value?: number
           name?: string
           nip?: string | null
           orders_suspended?: boolean
