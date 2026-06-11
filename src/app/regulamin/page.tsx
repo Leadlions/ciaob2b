@@ -18,6 +18,38 @@ export default async function RegulaminPage() {
       </p>
 
       <div className="mt-6 space-y-6 text-sm leading-relaxed text-foreground/80">
+        <section className="rounded-xl bg-muted/60 p-4">
+          <h2 className="font-medium text-foreground">Sprzedawca</h2>
+          <dl className="mt-2 space-y-1">
+            <div>
+              <dt className="inline text-foreground/55">Nazwa: </dt>
+              <dd className="inline">
+                CIAO MANUFAKTURA SŁODKOŚCI Sp. z o.o.
+              </dd>
+            </div>
+            <div>
+              <dt className="inline text-foreground/55">Siedziba: </dt>
+              <dd className="inline">Wyszogrodzka 22A, 09-402 Płock, Polska</dd>
+            </div>
+            <div>
+              <dt className="inline text-foreground/55">KRS: </dt>
+              <dd className="inline">0001192677</dd>
+            </div>
+            <div>
+              <dt className="inline text-foreground/55">NIP: </dt>
+              <dd className="inline">7743300766</dd>
+            </div>
+            <div>
+              <dt className="inline text-foreground/55">REGON: </dt>
+              <dd className="inline">542649270</dd>
+            </div>
+            <div>
+              <dt className="inline text-foreground/55">Kapitał zakładowy: </dt>
+              <dd className="inline">5 000 zł</dd>
+            </div>
+          </dl>
+        </section>
+
         <section>
           <h2 className="font-medium text-foreground">
             §1. Postanowienia ogólne
@@ -25,7 +57,9 @@ export default async function RegulaminPage() {
           <p className="mt-1">
             Niniejszy regulamin określa zasady składania, realizacji i
             rozliczania zamówień składanych przez Klientów biznesowych (B2B) za
-            pośrednictwem portalu zamówień ciao manufaktura.
+            pośrednictwem portalu zamówień prowadzonego przez CIAO MANUFAKTURA
+            SŁODKOŚCI Sp. z o.o. z siedzibą w Płocku (zwanej dalej
+            „Sprzedawcą").
           </p>
         </section>
 
