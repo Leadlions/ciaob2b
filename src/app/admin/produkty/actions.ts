@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionProfile } from "@/lib/auth";
 import type { TablesInsert } from "@/lib/database.types";
 import { VAT_RATES } from "@/lib/constants";
 
@@ -102,6 +103,68 @@ export async function saveProduct(
 
   revalidatePath("/admin/produkty");
   redirect("/admin/produkty");
+}
+
+export type BulkState = { error: string | null; ok?: string };
+
+// Masowa zmiana cen/VAT dla zaznaczonych produktów.
+export async function bulkUpdateProducts(
+  _prev: BulkState,
+  formData: FormData,
+): Promise<BulkState> {
+  const { profile } = await getSessionProfile();
+  if (profile?.role !== "admin") return { error: "Brak uprawnień." };
+
+  let ids: string[] = [];
+  try {
+    ids = (JSON.parse(String(formData.get("ids") ?? "[]")) as string[]).filter(
+      Boolean,
+    );
+  } catch {
+    return { error: "Błędne zaznaczenie." };
+  }
+  if (ids.length === 0) return { error: "Nie zaznaczono produktów." };
+
+  const op = String(formData.get("op") ?? "");
+  const value = parseNum(formData.get("value"));
+  if (Number.isNaN(value)) return { error: "Podaj wartość." };
+
+  const supabase = await createClient();
+
+  if (op === "set_vat") {
+    if (!VAT_RATES.includes(value as (typeof VAT_RATES)[number]))
+      return { error: "Wybierz poprawną stawkę VAT." };
+    const { error } = await supabase
+      .from("products")
+      .update({ vat_rate: value })
+      .in("id", ids);
+    if (error) return { error: `Nie udało się zapisać: ${error.message}` };
+    revalidatePath("/admin/produkty");
+    return { error: null, ok: `Ustawiono VAT ${value}% dla ${ids.length} produktów.` };
+  }
+
+  if (!["set_price", "pct", "amount"].includes(op))
+    return { error: "Nieznana operacja." };
+
+  // Operacje na cenie wymagają obecnych wartości — pobieramy i liczymy per produkt.
+  const { data: rows } = await supabase
+    .from("products")
+    .select("id, base_price")
+    .in("id", ids);
+  if (!rows) return { error: "Nie znaleziono produktów." };
+
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  for (const r of rows) {
+    let next = r.base_price;
+    if (op === "set_price") next = value;
+    else if (op === "pct") next = r.base_price * (1 + value / 100);
+    else if (op === "amount") next = r.base_price + value;
+    next = Math.max(0, round2(next));
+    await supabase.from("products").update({ base_price: next }).eq("id", r.id);
+  }
+
+  revalidatePath("/admin/produkty");
+  return { error: null, ok: `Zaktualizowano ceny ${rows.length} produktów.` };
 }
 
 export async function toggleProductActive(formData: FormData) {
