@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { formatPrice, grossFromNet, VAT_RATES } from "@/lib/constants";
+import type { Category } from "@/lib/categories";
 import {
   bulkUpdateProducts,
   toggleProductActive,
@@ -27,9 +28,11 @@ const initial: BulkState = { error: null };
 
 export function ProductsTable({
   products,
+  categories,
   catLabel,
 }: {
   products: Row[];
+  categories: Category[];
   catLabel: Record<string, string>;
 }) {
   const [sel, setSel] = useState<Set<string>>(new Set());
@@ -68,6 +71,9 @@ export function ProductsTable({
           <option value="pct">Zmień o procent (%)</option>
           <option value="amount">Zmień o kwotę (zł)</option>
           <option value="set_vat">Ustaw VAT (%)</option>
+          <option value="set_category">Przypisz kategorię</option>
+          <option value="activate">Aktywuj</option>
+          <option value="deactivate">Dezaktywuj</option>
         </select>
         {op === "set_vat" ? (
           <Select name="value" className="max-w-[100px]" defaultValue="8">
@@ -77,7 +83,18 @@ export function ProductsTable({
               </option>
             ))}
           </Select>
-        ) : (
+        ) : op === "set_category" ? (
+          <Select name="value" className="max-w-[200px]" defaultValue="">
+            <option value="" disabled>
+              Wybierz kategorię…
+            </option>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+        ) : op === "activate" || op === "deactivate" ? null : (
           <Input
             name="value"
             type="number"

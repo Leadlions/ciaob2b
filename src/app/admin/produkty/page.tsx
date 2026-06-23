@@ -75,7 +75,11 @@ export default async function ProductsPage({
           action={<LinkButton href="/admin/produkty/nowy">+ Nowy produkt</LinkButton>}
         />
       ) : (
-        <ProductsTable products={products} catLabel={catLabel} />
+        <ProductsTable
+          products={products}
+          categories={categories}
+          catLabel={catLabel}
+        />
       )}
     </div>
   );

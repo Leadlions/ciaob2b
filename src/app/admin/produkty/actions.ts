@@ -126,10 +126,42 @@ export async function bulkUpdateProducts(
   if (ids.length === 0) return { error: "Nie zaznaczono produktów." };
 
   const op = String(formData.get("op") ?? "");
+  const supabase = await createClient();
+
+  // --- Operacje bez wartości liczbowej ---
+  if (op === "set_category") {
+    const slug = String(formData.get("value") ?? "").trim();
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("slug")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!cat) return { error: "Wybierz poprawną kategorię." };
+    const { error } = await supabase
+      .from("products")
+      .update({ category: slug })
+      .in("id", ids);
+    if (error) return { error: `Nie udało się zapisać: ${error.message}` };
+    revalidatePath("/admin/produkty");
+    return { error: null, ok: `Przypisano kategorię dla ${ids.length} produktów.` };
+  }
+
+  if (op === "activate" || op === "deactivate") {
+    const { error } = await supabase
+      .from("products")
+      .update({ is_active: op === "activate" })
+      .in("id", ids);
+    if (error) return { error: `Nie udało się zapisać: ${error.message}` };
+    revalidatePath("/admin/produkty");
+    return {
+      error: null,
+      ok: `${op === "activate" ? "Aktywowano" : "Dezaktywowano"} ${ids.length} produktów.`,
+    };
+  }
+
+  // --- Operacje z wartością liczbową ---
   const value = parseNum(formData.get("value"));
   if (Number.isNaN(value)) return { error: "Podaj wartość." };
-
-  const supabase = await createClient();
 
   if (op === "set_vat") {
     if (!VAT_RATES.includes(value as (typeof VAT_RATES)[number]))
