@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/auth";
 import type { TablesInsert } from "@/lib/database.types";
-import { VAT_RATES } from "@/lib/constants";
+import { VAT_RATES, UNITS } from "@/lib/constants";
 
 export type ProductFormState = { error: string | null };
 
@@ -159,9 +159,33 @@ export async function bulkUpdateProducts(
     };
   }
 
+  if (op === "set_unit") {
+    const unit = String(formData.get("value") ?? "").trim();
+    if (!UNITS.includes(unit as (typeof UNITS)[number]))
+      return { error: "Wybierz poprawną jednostkę." };
+    const { error } = await supabase
+      .from("products")
+      .update({ unit })
+      .in("id", ids);
+    if (error) return { error: `Nie udało się zapisać: ${error.message}` };
+    revalidatePath("/admin/produkty");
+    return { error: null, ok: `Ustawiono jednostkę „${unit}" dla ${ids.length} produktów.` };
+  }
+
   // --- Operacje z wartością liczbową ---
   const value = parseNum(formData.get("value"));
   if (Number.isNaN(value)) return { error: "Podaj wartość." };
+
+  if (op === "set_min") {
+    if (value < 0) return { error: "Minimalna ilość musi być ≥ 0." };
+    const { error } = await supabase
+      .from("products")
+      .update({ min_order_qty: value })
+      .in("id", ids);
+    if (error) return { error: `Nie udało się zapisać: ${error.message}` };
+    revalidatePath("/admin/produkty");
+    return { error: null, ok: `Ustawiono min. ilość ${value} dla ${ids.length} produktów.` };
+  }
 
   if (op === "set_vat") {
     if (!VAT_RATES.includes(value as (typeof VAT_RATES)[number]))

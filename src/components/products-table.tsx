@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { formatPrice, grossFromNet, VAT_RATES } from "@/lib/constants";
+import { formatPrice, grossFromNet, VAT_RATES, UNITS } from "@/lib/constants";
 import type { Category } from "@/lib/categories";
 import {
   bulkUpdateProducts,
@@ -72,6 +72,8 @@ export function ProductsTable({
           <option value="amount">Zmień o kwotę (zł)</option>
           <option value="set_vat">Ustaw VAT (%)</option>
           <option value="set_category">Przypisz kategorię</option>
+          <option value="set_min">Ustaw min. ilość</option>
+          <option value="set_unit">Ustaw jednostkę</option>
           <option value="activate">Aktywuj</option>
           <option value="deactivate">Dezaktywuj</option>
         </select>
@@ -94,12 +96,29 @@ export function ProductsTable({
               </option>
             ))}
           </Select>
+        ) : op === "set_unit" ? (
+          <Select name="value" className="max-w-[120px]" defaultValue="">
+            <option value="" disabled>
+              Jednostka…
+            </option>
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </Select>
         ) : op === "activate" || op === "deactivate" ? null : (
           <Input
             name="value"
             type="number"
-            step="0.01"
-            placeholder={op === "pct" ? "np. -10 lub 5" : "np. 12,50"}
+            step={op === "set_min" ? "1" : "0.01"}
+            placeholder={
+              op === "pct"
+                ? "np. -10 lub 5"
+                : op === "set_min"
+                  ? "np. 3"
+                  : "np. 12,50"
+            }
             className="max-w-[140px]"
           />
         )}
