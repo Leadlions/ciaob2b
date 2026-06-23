@@ -119,7 +119,12 @@ export async function submitOrder(
       customPrice: customMap.get(p.id) ?? null,
       promoPrice: promoMap.get(p.id) ?? null,
     });
-    return { product_id: p.id, quantity: Number(it.quantity), unit_price: price.effective };
+    return {
+      product_id: p.id,
+      quantity: Number(it.quantity),
+      unit_price: price.effective,
+      vat_rate: p.vat_rate,
+    };
   });
   const cartTotal = orderItems.reduce(
     (s, oi) => s + oi.unit_price * oi.quantity,

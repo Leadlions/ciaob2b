@@ -7,6 +7,7 @@ import {
   DELIVERY_SLOT_LABELS,
   formatDate,
   formatPrice,
+  grossFromNet,
   orderRef,
 } from "@/lib/constants";
 import {
@@ -46,7 +47,7 @@ export default async function AdminOrderDetailPage({
       .single(),
     supabase
       .from("order_items")
-      .select("product_id, quantity, unit_price")
+      .select("product_id, quantity, unit_price, vat_rate")
       .eq("order_id", id),
   ]);
 
@@ -61,10 +62,15 @@ export default async function AdminOrderDetailPage({
       nameMap.set(p.id, { name: p.name, unit: p.unit });
   }
 
-  const total = (items ?? []).reduce(
+  const totalNet = (items ?? []).reduce(
     (s, i) => s + i.quantity * i.unit_price,
     0,
   );
+  const totalGross = (items ?? []).reduce(
+    (s, i) => s + grossFromNet(i.quantity * i.unit_price, i.vat_rate),
+    0,
+  );
+  const totalVat = Math.round((totalGross - totalNet) * 100) / 100;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -109,13 +115,16 @@ export default async function AdminOrderDetailPage({
             <tr>
               <th className="px-4 py-3 font-medium">Produkt</th>
               <th className="px-4 py-3 font-medium">Ilość</th>
-              <th className="px-4 py-3 font-medium">Cena</th>
-              <th className="px-4 py-3 text-right font-medium">Wartość</th>
+              <th className="px-4 py-3 font-medium">Cena netto</th>
+              <th className="px-4 py-3 font-medium">VAT</th>
+              <th className="px-4 py-3 text-right font-medium">Netto</th>
+              <th className="px-4 py-3 text-right font-medium">Brutto</th>
             </tr>
           </thead>
           <tbody>
             {(items ?? []).map((it, idx) => {
               const p = nameMap.get(it.product_id);
+              const net = it.quantity * it.unit_price;
               return (
                 <tr key={idx} className="border-b border-border last:border-0">
                   <td className="px-4 py-3">{p?.name ?? "—"}</td>
@@ -123,19 +132,39 @@ export default async function AdminOrderDetailPage({
                     {it.quantity} {p?.unit}
                   </td>
                   <td className="px-4 py-3">{formatPrice(it.unit_price)}</td>
+                  <td className="px-4 py-3 text-foreground/60">{it.vat_rate}%</td>
+                  <td className="px-4 py-3 text-right">{formatPrice(net)}</td>
                   <td className="px-4 py-3 text-right">
-                    {formatPrice(it.quantity * it.unit_price)}
+                    {formatPrice(grossFromNet(net, it.vat_rate))}
                   </td>
                 </tr>
               );
             })}
           </tbody>
-          <tfoot>
-            <tr className="font-semibold">
-              <td className="px-4 py-3" colSpan={3}>
-                Razem
+          <tfoot className="border-t border-border">
+            <tr>
+              <td className="px-4 py-2 text-foreground/60" colSpan={4}>
+                Razem netto
               </td>
-              <td className="px-4 py-3 text-right">{formatPrice(total)}</td>
+              <td className="px-4 py-2 text-right" colSpan={2}>
+                {formatPrice(totalNet)}
+              </td>
+            </tr>
+            <tr>
+              <td className="px-4 py-2 text-foreground/60" colSpan={4}>
+                VAT
+              </td>
+              <td className="px-4 py-2 text-right" colSpan={2}>
+                {formatPrice(totalVat)}
+              </td>
+            </tr>
+            <tr className="font-semibold">
+              <td className="px-4 py-2" colSpan={4}>
+                Razem brutto
+              </td>
+              <td className="px-4 py-2 text-right" colSpan={2}>
+                {formatPrice(totalGross)}
+              </td>
             </tr>
           </tfoot>
         </table>

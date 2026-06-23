@@ -158,6 +158,7 @@ export type Database = {
           product_id: string
           quantity: number
           unit_price: number
+          vat_rate: number
         }
         Insert: {
           created_at?: string
@@ -166,6 +167,7 @@ export type Database = {
           product_id: string
           quantity: number
           unit_price: number
+          vat_rate?: number
         }
         Update: {
           created_at?: string
@@ -174,6 +176,7 @@ export type Database = {
           product_id?: string
           quantity?: number
           unit_price?: number
+          vat_rate?: number
         }
         Relationships: []
       }

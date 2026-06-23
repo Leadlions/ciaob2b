@@ -13,6 +13,7 @@ import {
   WEEKDAYS,
   formatDate,
   formatPrice,
+  grossFromNet,
 } from "@/lib/constants";
 import type { Enums } from "@/lib/database.types";
 import { SubmitButton } from "./submit-button";
@@ -25,6 +26,7 @@ export type ProductItem = {
   unit: string;
   min_order_qty: number;
   price: number;
+  vat_rate: number;
   image_url: string | null;
   description: string | null;
   pdf_url: string | null;
@@ -87,6 +89,10 @@ export function OrderCreator({
     [products, qty],
   );
   const total = cart.reduce((s, x) => s + x.q * x.p.price, 0);
+  const totalGross = cart.reduce(
+    (s, x) => s + grossFromNet(x.q * x.p.price, x.p.vat_rate),
+    0,
+  );
   const belowMin = minOrderValue > 0 && total < minOrderValue;
   const items = cart.map((x) => ({ product_id: x.p.id, quantity: x.q }));
   const setQ = (id: string, v: number) =>
@@ -399,9 +405,13 @@ export function OrderCreator({
                     </li>
                   ))}
                 </ul>
-                <div className="flex justify-between text-sm font-semibold">
-                  <span>Razem {mode === "cykliczne" ? "(za 1 dostawę)" : ""}</span>
+                <div className="flex justify-between text-xs text-foreground/55">
+                  <span>Razem netto {mode === "cykliczne" ? "(za 1 dostawę)" : ""}</span>
                   <span>{formatPrice(total)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>Razem brutto</span>
+                  <span>{formatPrice(totalGross)}</span>
                 </div>
                 {minOrderValue > 0 && (
                   <p

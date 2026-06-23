@@ -78,6 +78,7 @@ export default async function NewOrderPage() {
     category: p.category,
     unit: p.unit,
     min_order_qty: p.min_order_qty,
+    vat_rate: p.vat_rate,
     image_url: p.image_url,
     description: p.description,
     pdf_url: p.pdf_url,
