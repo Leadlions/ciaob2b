@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, orderRef } from "@/lib/constants";
-import { EmptyState, PageHeader } from "@/components/ui";
+import { warsawDate } from "@/lib/delivery";
+import { EmptyState, PageHeader, btnPrimary } from "@/components/ui";
 import { IconDoc } from "@/components/icons";
 
 export default async function AdminDocumentsPage() {
   const supabase = await createClient();
+  const today = warsawDate(0);
 
   const { data: docs } = await supabase
     .from("documents")
@@ -30,6 +32,42 @@ export default async function AdminDocumentsPage() {
         title="Dokumenty WZ"
         description="Dokumenty wydania zewnętrznego. Numer WZ nadajesz na karcie zamówienia."
       />
+
+      {/* Zbiorczy druk WZ wg daty dostawy */}
+      <form
+        method="get"
+        action="/wz/druk"
+        target="_blank"
+        className="mb-5 flex flex-wrap items-end gap-2 rounded-xl border border-border bg-surface p-3 text-sm"
+      >
+        <div>
+          <label htmlFor="from" className="mb-1 block text-xs text-foreground/60">
+            Od (data dostawy)
+          </label>
+          <input
+            id="from"
+            type="date"
+            name="from"
+            defaultValue={today}
+            className="rounded-lg border border-border bg-background px-3 py-1.5 outline-none focus:border-brand"
+          />
+        </div>
+        <div>
+          <label htmlFor="to" className="mb-1 block text-xs text-foreground/60">
+            Do
+          </label>
+          <input
+            id="to"
+            type="date"
+            name="to"
+            defaultValue={today}
+            className="rounded-lg border border-border bg-background px-3 py-1.5 outline-none focus:border-brand"
+          />
+        </div>
+        <button type="submit" className={btnPrimary}>
+          Drukuj WZ z zakresu ↗
+        </button>
+      </form>
 
       {!docs || docs.length === 0 ? (
         <EmptyState
