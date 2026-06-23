@@ -17,9 +17,10 @@ const STATUSES = Object.keys(ORDER_STATUS_LABELS) as Enums<"order_status">[];
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; arch?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, arch: archParam } = await searchParams;
+  const arch = archParam === "1";
   const supabase = await createClient();
 
   let query = supabase
@@ -27,6 +28,9 @@ export default async function AdminOrdersPage({
     .select("*")
     .order("delivery_date", { ascending: true })
     .order("created_at", { ascending: false });
+  query = arch
+    ? query.not("archived_at", "is", null)
+    : query.is("archived_at", null);
   if (status && STATUSES.includes(status as Enums<"order_status">))
     query = query.eq("status", status as Enums<"order_status">);
 
@@ -63,10 +67,10 @@ export default async function AdminOrdersPage({
         description="Wszystkie zamówienia klientów. Sortowane wg daty dostawy."
       />
 
-      <div className="mb-5 flex flex-wrap gap-2 text-sm">
+      <div className="mb-5 flex flex-wrap items-center gap-2 text-sm">
         <Link
           href="/admin/zamowienia"
-          className={`rounded-full px-3 py-1 ${!status ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
+          className={`rounded-full px-3 py-1 ${!status && !arch ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
         >
           Wszystkie
         </Link>
@@ -74,12 +78,27 @@ export default async function AdminOrdersPage({
           <Link
             key={s}
             href={`/admin/zamowienia?status=${s}`}
-            className={`rounded-full px-3 py-1 ${status === s ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
+            className={`rounded-full px-3 py-1 ${status === s && !arch ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
           >
             {ORDER_STATUS_LABELS[s]}
           </Link>
         ))}
+        <Link
+          href="/admin/zamowienia?arch=1"
+          className={`ml-auto rounded-full px-3 py-1 ${arch ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
+        >
+          Archiwum
+        </Link>
       </div>
+
+      {arch && (
+        <p className="mb-3 text-sm text-foreground/60">
+          Pokazujesz zarchiwizowane zamówienia.{" "}
+          <Link href="/admin/zamowienia" className="text-brand hover:underline">
+            ← wróć do aktywnych
+          </Link>
+        </p>
+      )}
 
       {!orders || orders.length === 0 ? (
         <EmptyState title="Brak zamówień" />

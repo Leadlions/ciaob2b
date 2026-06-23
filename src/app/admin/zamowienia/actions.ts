@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/auth";
 import { ORDER_STATUS_LABELS } from "@/lib/constants";
@@ -83,4 +84,33 @@ export async function deleteWz(formData: FormData) {
   revalidatePath("/admin/zamowienia");
   revalidatePath(`/admin/zamowienia/${id}`);
   revalidatePath("/admin/dokumenty");
+}
+
+// Archiwizacja (odwracalna) — chowa zamówienie z domyślnych list.
+export async function archiveOrder(formData: FormData) {
+  const { profile } = await getSessionProfile();
+  if (profile?.role !== "admin") return;
+  const id = String(formData.get("id"));
+  const next = formData.get("next") === "true"; // true = archiwizuj
+  const supabase = await createClient();
+  await supabase
+    .from("orders")
+    .update({ archived_at: next ? new Date().toISOString() : null })
+    .eq("id", id);
+  revalidatePath("/admin/zamowienia");
+  revalidatePath(`/admin/zamowienia/${id}`);
+}
+
+// Trwałe usunięcie zamówienia wraz z pozycjami i dokumentami WZ.
+export async function deleteOrder(formData: FormData) {
+  const { profile } = await getSessionProfile();
+  if (profile?.role !== "admin") return;
+  const id = String(formData.get("id"));
+  const supabase = await createClient();
+  await supabase.from("order_items").delete().eq("order_id", id);
+  await supabase.from("documents").delete().eq("order_id", id);
+  await supabase.from("orders").delete().eq("id", id);
+  revalidatePath("/admin/zamowienia");
+  revalidatePath("/admin/dokumenty");
+  redirect("/admin/zamowienia");
 }

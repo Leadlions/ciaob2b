@@ -182,6 +182,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          archived_at: string | null
           client_id: string
           created_at: string
           created_by: string | null
@@ -195,6 +196,7 @@ export type Database = {
           wz_number: string | null
         }
         Insert: {
+          archived_at?: string | null
           client_id: string
           created_at?: string
           created_by?: string | null
@@ -208,6 +210,7 @@ export type Database = {
           wz_number?: string | null
         }
         Update: {
+          archived_at?: string | null
           client_id?: string
           created_at?: string
           created_by?: string | null

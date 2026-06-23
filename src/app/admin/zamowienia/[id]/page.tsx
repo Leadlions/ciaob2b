@@ -19,7 +19,14 @@ import {
   btnSecondary,
 } from "@/components/ui";
 import { PendingButton } from "@/components/pending-button";
-import { updateOrderStatus, generateWz, deleteWz } from "../actions";
+import { ConfirmButton } from "@/components/confirm-button";
+import {
+  updateOrderStatus,
+  generateWz,
+  deleteWz,
+  archiveOrder,
+  deleteOrder,
+} from "../actions";
 import type { Enums } from "@/lib/database.types";
 
 const STATUSES = Object.keys(ORDER_STATUS_LABELS) as Enums<"order_status">[];
@@ -241,6 +248,37 @@ export default async function AdminOrderDetailPage({
             </span>
           </div>
         )}
+      </Card>
+
+      <Card className="mt-4">
+        <div className="text-sm font-medium">Archiwizacja / usuwanie</div>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <form action={archiveOrder}>
+            <input type="hidden" name="id" value={order.id} />
+            <input
+              type="hidden"
+              name="next"
+              value={(!order.archived_at).toString()}
+            />
+            <PendingButton className={btnSecondary} pendingText="…">
+              {order.archived_at ? "Przywróć z archiwum" : "Archiwizuj"}
+            </PendingButton>
+          </form>
+          <form action={deleteOrder} className="ml-auto">
+            <input type="hidden" name="id" value={order.id} />
+            <ConfirmButton
+              confirm="Trwale usunąć to zamówienie wraz z pozycjami i dokumentem WZ? Tej operacji nie można cofnąć."
+              className="rounded-lg px-3 py-2 text-sm font-medium text-brand-dark hover:bg-brand-50"
+              pendingText="Usuwanie…"
+            >
+              Usuń trwale
+            </ConfirmButton>
+          </form>
+        </div>
+        <p className="mt-2 text-xs text-foreground/50">
+          Archiwizacja chowa zamówienie z list (można przywrócić). Usunięcie jest
+          nieodwracalne.
+        </p>
       </Card>
     </div>
   );
