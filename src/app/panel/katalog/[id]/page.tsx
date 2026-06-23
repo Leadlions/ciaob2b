@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
-import { CATEGORY_LABELS, formatPrice } from "@/lib/constants";
+import { formatPrice } from "@/lib/constants";
 import { Badge, btnPrimary, btnSecondary } from "@/components/ui";
 
 export default async function CatalogProductPage({
@@ -25,6 +25,12 @@ export default async function CatalogProductPage({
     .eq("is_active", true)
     .single();
   if (!product) notFound();
+
+  const { data: cat } = await supabase
+    .from("categories")
+    .select("label")
+    .eq("slug", product.category)
+    .maybeSingle();
 
   const [{ data: client }, { data: cp }, { data: promos }] = await Promise.all([
     supabase
@@ -96,7 +102,7 @@ export default async function CatalogProductPage({
 
         <div className="flex flex-col">
           <div className="mb-2 flex flex-wrap gap-1">
-            <Badge>{CATEGORY_LABELS[product.category]}</Badge>
+            <Badge>{cat?.label ?? product.category}</Badge>
             {price.isPromoOfDay && <Badge tone="red">Promocja dnia</Badge>}
             {price.isPromo && !price.isPromoOfDay && (
               <Badge tone="red">Promocja</Badge>

@@ -6,20 +6,21 @@ import {
   saveProduct,
   type ProductFormState,
 } from "@/app/admin/produkty/actions";
-import {
-  CATEGORIES,
-  CATEGORY_LABELS,
-  UNITS,
-  VAT_RATES,
-  DEFAULT_VAT_RATE,
-} from "@/lib/constants";
+import { UNITS, VAT_RATES, DEFAULT_VAT_RATE } from "@/lib/constants";
+import type { Category } from "@/lib/categories";
 import type { Tables } from "@/lib/database.types";
 import { Card, Field, Input, Select, Textarea, btnSecondary } from "./ui";
 import { SubmitButton } from "./submit-button";
 
 const initial: ProductFormState = { error: null };
 
-export function ProductForm({ product }: { product?: Tables<"products"> }) {
+export function ProductForm({
+  product,
+  categories,
+}: {
+  product?: Tables<"products">;
+  categories: Category[];
+}) {
   const [state, action] = useActionState(saveProduct, initial);
   const editing = !!product;
 
@@ -59,9 +60,9 @@ export function ProductForm({ product }: { product?: Tables<"products"> }) {
               <option value="" disabled>
                 Wybierz…
               </option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {CATEGORY_LABELS[c]}
+              {categories.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.label}
                 </option>
               ))}
             </Select>

@@ -9,6 +9,7 @@ const NAV: NavItem[] = [
   { label: "Klienci", href: "/admin/klienci", ready: true, icon: "clients" },
   { label: "Użytkownicy", href: "/admin/uzytkownicy", ready: true, icon: "users" },
   { label: "Produkty", href: "/admin/produkty", ready: true, icon: "products" },
+  { label: "Kategorie", href: "/admin/kategorie", ready: true, icon: "catalog" },
   { label: "Promocje", href: "/admin/promocje", ready: true, icon: "promo" },
   { label: "Dokumenty WZ", href: "/admin/dokumenty", ready: true, icon: "doc" },
   { label: "Faktury", href: "/admin/faktury", icon: "invoice" },

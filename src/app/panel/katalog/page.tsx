@@ -4,6 +4,7 @@ import { computePrice } from "@/lib/pricing";
 import { PageHeader } from "@/components/ui";
 import { IconCatalog } from "@/components/icons";
 import { CatalogGrid, type CatalogCard } from "@/components/catalog-grid";
+import { getCategories } from "@/lib/categories";
 
 export default async function CatalogPage() {
   const { clientId, isAdmin } = await getEffectiveClientId();
@@ -89,6 +90,8 @@ export default async function CatalogPage() {
     };
   });
 
+  const categories = await getCategories(supabase);
+
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
@@ -96,7 +99,7 @@ export default async function CatalogPage() {
         title="Katalog"
         description="Produkty z Twoimi cenami. Ceny po rabacie i promocje są już uwzględnione."
       />
-      <CatalogGrid products={cards} />
+      <CatalogGrid products={cards} categories={categories} />
     </div>
   );
 }

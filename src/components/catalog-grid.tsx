@@ -2,19 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  CATEGORIES,
-  CATEGORY_LABELS,
-  formatPrice,
-} from "@/lib/constants";
-import type { Enums } from "@/lib/database.types";
+import { formatPrice } from "@/lib/constants";
+import type { Category } from "@/lib/categories";
 import { Badge, EmptyState } from "./ui";
 
 export type CatalogCard = {
   id: string;
   name: string;
   description: string | null;
-  category: Enums<"product_category">;
+  category: string;
   unit: string;
   min_order_qty: number;
   image_url: string | null;
@@ -26,7 +22,13 @@ export type CatalogCard = {
   isPromoOfDay: boolean;
 };
 
-export function CatalogGrid({ products }: { products: CatalogCard[] }) {
+export function CatalogGrid({
+  products,
+  categories,
+}: {
+  products: CatalogCard[];
+  categories: Category[];
+}) {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("");
 
@@ -56,14 +58,14 @@ export function CatalogGrid({ products }: { products: CatalogCard[] }) {
         >
           Wszystkie
         </button>
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
-            key={c}
+            key={c.slug}
             type="button"
-            onClick={() => setCat(c)}
-            className={`rounded-full px-3 py-1 ${cat === c ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
+            onClick={() => setCat(c.slug)}
+            className={`rounded-full px-3 py-1 ${cat === c.slug ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
           >
-            {CATEGORY_LABELS[c]}
+            {c.label}
           </button>
         ))}
       </div>

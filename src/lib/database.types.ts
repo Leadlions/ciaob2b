@@ -222,10 +222,34 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           base_price: number
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at: string
           description: string | null
           id: string
@@ -240,7 +264,7 @@ export type Database = {
         }
         Insert: {
           base_price?: number
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at?: string
           description?: string | null
           id?: string
@@ -255,7 +279,7 @@ export type Database = {
         }
         Update: {
           base_price?: number
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           description?: string | null
           id?: string

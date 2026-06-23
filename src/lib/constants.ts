@@ -1,17 +1,7 @@
 import type { Enums } from "@/lib/database.types";
 
-// Kategorie produktów — wartość w bazie -> etykieta po polsku.
-export const CATEGORY_LABELS: Record<Enums<"product_category">, string> = {
-  ciasta: "Ciasta",
-  torty: "Torty",
-  ciastka: "Ciastka",
-  desery: "Desery",
-  pieczywo_slodkie: "Pieczywo słodkie",
-};
-
-export const CATEGORIES = Object.keys(
-  CATEGORY_LABELS,
-) as Enums<"product_category">[];
+// Kategorie produktów są teraz dynamiczne (tabela `categories`).
+// Patrz: src/lib/categories.ts (getCategories / categoryLabelMap).
 
 // Przedziały godzinowe dostawy.
 export const DELIVERY_SLOT_LABELS: Record<Enums<"delivery_slot">, string> = {

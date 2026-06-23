@@ -3,8 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Enums, TablesInsert } from "@/lib/database.types";
-import { CATEGORIES, VAT_RATES } from "@/lib/constants";
+import type { TablesInsert } from "@/lib/database.types";
+import { VAT_RATES } from "@/lib/constants";
 
 export type ProductFormState = { error: string | null };
 
@@ -35,7 +35,7 @@ export async function saveProduct(
   const id = (formData.get("id") as string) || null;
 
   const name = String(formData.get("name") ?? "").trim();
-  const category = String(formData.get("category") ?? "") as Enums<"product_category">;
+  const category = String(formData.get("category") ?? "").trim();
   const base_price = parseNum(formData.get("base_price"));
   const vat_rate = parseNum(formData.get("vat_rate"));
   const min_order_qty = parseNum(formData.get("min_order_qty"));
@@ -45,7 +45,7 @@ export async function saveProduct(
   const is_active = formData.get("is_active") === "on";
 
   if (!name) return { error: "Podaj nazwę produktu." };
-  if (!CATEGORIES.includes(category)) return { error: "Wybierz kategorię." };
+  if (!category) return { error: "Wybierz kategorię." };
   if (Number.isNaN(base_price) || base_price < 0)
     return { error: "Cena bazowa musi być liczbą ≥ 0." };
   if (!VAT_RATES.includes(vat_rate as (typeof VAT_RATES)[number]))
@@ -54,6 +54,13 @@ export async function saveProduct(
     return { error: "Minimalna ilość musi być liczbą ≥ 0." };
 
   const supabase = await createClient();
+
+  const { data: cat } = await supabase
+    .from("categories")
+    .select("slug")
+    .eq("slug", category)
+    .maybeSingle();
+  if (!cat) return { error: "Wybrana kategoria nie istnieje." };
 
   let image_url = (formData.get("current_image_url") as string) || null;
   let pdf_url = (formData.get("current_pdf_url") as string) || null;

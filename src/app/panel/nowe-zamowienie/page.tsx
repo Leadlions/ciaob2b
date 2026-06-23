@@ -4,6 +4,7 @@ import { getEffectiveClientId } from "@/lib/view-as";
 import { computePrice } from "@/lib/pricing";
 import { earliestDeliveryDate } from "@/lib/delivery";
 import { getCutoffHour } from "@/lib/settings";
+import { getCategories } from "@/lib/categories";
 import { PageHeader } from "@/components/ui";
 import { OrderCreator, type ProductItem } from "@/components/order-creator";
 
@@ -92,6 +93,7 @@ export default async function NewOrderPage() {
 
   const cutoffHour = await getCutoffHour(supabase);
   const minDate = earliestDeliveryDate(cutoffHour);
+  const categories = await getCategories(supabase);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -109,6 +111,7 @@ export default async function NewOrderPage() {
       />
       <OrderCreator
         products={items}
+        categories={categories}
         minDate={minDate}
         cutoffHour={cutoffHour}
         minOrderValue={client?.min_order_value ?? 0}

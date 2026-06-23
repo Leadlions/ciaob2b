@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import {
-  CATEGORIES,
-  CATEGORY_LABELS,
-  formatPrice,
-  grossFromNet,
-} from "@/lib/constants";
+import { formatPrice, grossFromNet } from "@/lib/constants";
+import { getCategories, categoryLabelMap } from "@/lib/categories";
 import {
   Badge,
   EmptyState,
@@ -15,7 +11,6 @@ import {
 import { IconProducts } from "@/components/icons";
 import { PendingButton } from "@/components/pending-button";
 import { toggleProductActive } from "./actions";
-import type { Enums } from "@/lib/database.types";
 
 export default async function ProductsPage({
   searchParams,
@@ -25,14 +20,18 @@ export default async function ProductsPage({
   const { kat, status } = await searchParams;
   const supabase = await createClient();
 
+  const categories = await getCategories(supabase);
+  const catLabel = categoryLabelMap(categories);
+  const validKat = categories.some((c) => c.slug === kat);
+
   let query = supabase
     .from("products")
     .select("*")
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true });
 
-  if (kat && CATEGORIES.includes(kat as Enums<"product_category">)) {
-    query = query.eq("category", kat as Enums<"product_category">);
+  if (kat && validKat) {
+    query = query.eq("category", kat);
   }
   if (status === "aktywne") query = query.eq("is_active", true);
   if (status === "nieaktywne") query = query.eq("is_active", false);
@@ -65,13 +64,13 @@ export default async function ProductsPage({
         >
           Wszystkie kategorie
         </Link>
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <Link
-            key={c}
-            href={filterLink({ kat: c })}
-            className={`rounded-full px-3 py-1 ${kat === c ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
+            key={c.slug}
+            href={filterLink({ kat: c.slug })}
+            className={`rounded-full px-3 py-1 ${kat === c.slug ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
           >
-            {CATEGORY_LABELS[c]}
+            {c.label}
           </Link>
         ))}
       </div>
@@ -116,7 +115,7 @@ export default async function ProductsPage({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-foreground/70">
-                    {CATEGORY_LABELS[p.category]}
+                    {catLabel[p.category] ?? p.category}
                   </td>
                   <td className="px-4 py-3">{formatPrice(p.base_price)}</td>
                   <td className="px-4 py-3 text-foreground/60">{p.vat_rate}%</td>

@@ -6,8 +6,6 @@ import {
   type CreateOrderState,
 } from "@/app/panel/nowe-zamowienie/actions";
 import {
-  CATEGORIES,
-  CATEGORY_LABELS,
   DELIVERY_SLOTS,
   DELIVERY_SLOT_LABELS,
   WEEKDAYS,
@@ -15,14 +13,14 @@ import {
   formatPrice,
   grossFromNet,
 } from "@/lib/constants";
-import type { Enums } from "@/lib/database.types";
+import type { Category } from "@/lib/categories";
 import { SubmitButton } from "./submit-button";
 import { Badge, btnPrimary, btnSecondary } from "./ui";
 
 export type ProductItem = {
   id: string;
   name: string;
-  category: Enums<"product_category">;
+  category: string;
   unit: string;
   min_order_qty: number;
   price: number;
@@ -36,15 +34,18 @@ const initial: CreateOrderState = { error: null };
 
 export function OrderCreator({
   products,
+  categories,
   minDate,
   cutoffHour = 18,
   minOrderValue = 0,
 }: {
   products: ProductItem[];
+  categories: Category[];
   minDate: string;
   cutoffHour?: number;
   minOrderValue?: number;
 }) {
+  const catLabel = Object.fromEntries(categories.map((c) => [c.slug, c.label]));
   const [state, action] = useActionState(submitOrder, initial);
 
   // Kliknięcie w dowolne miejsce pola daty otwiera kalendarz (nie tylko ikonka).
@@ -125,14 +126,14 @@ export function OrderCreator({
           >
             Wszystkie
           </button>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <button
-              key={c}
+              key={c.slug}
               type="button"
-              onClick={() => setCat(c)}
-              className={`rounded-full px-3 py-1 ${cat === c ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
+              onClick={() => setCat(c.slug)}
+              className={`rounded-full px-3 py-1 ${cat === c.slug ? "bg-brand text-white" : "bg-muted text-foreground/70"}`}
             >
-              {CATEGORY_LABELS[c]}
+              {c.label}
             </button>
           ))}
         </div>
@@ -511,7 +512,7 @@ export function OrderCreator({
             </div>
 
             <div className="mt-3 flex flex-wrap gap-1">
-              <Badge>{CATEGORY_LABELS[preview.category]}</Badge>
+              <Badge>{catLabel[preview.category] ?? preview.category}</Badge>
             </div>
             <h3 className="mt-1 text-lg font-semibold">{preview.name}</h3>
             <div className="mt-1 flex items-end gap-2">
