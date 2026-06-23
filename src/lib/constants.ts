@@ -107,3 +107,12 @@ export function formatPrice(value: number): string {
     currency: "PLN",
   }).format(value);
 }
+
+// Dostępne stawki VAT (%) dla produktów.
+export const VAT_RATES = [0, 5, 8, 23] as const;
+export const DEFAULT_VAT_RATE = 8;
+
+// Brutto z netto przy danej stawce VAT (%), zaokrąglone do groszy.
+export function grossFromNet(net: number, vatRate: number): number {
+  return Math.round(net * (1 + vatRate / 100) * 100) / 100;
+}

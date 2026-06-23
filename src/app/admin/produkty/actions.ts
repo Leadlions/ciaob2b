@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Enums, TablesInsert } from "@/lib/database.types";
-import { CATEGORIES } from "@/lib/constants";
+import { CATEGORIES, VAT_RATES } from "@/lib/constants";
 
 export type ProductFormState = { error: string | null };
 
@@ -37,6 +37,7 @@ export async function saveProduct(
   const name = String(formData.get("name") ?? "").trim();
   const category = String(formData.get("category") ?? "") as Enums<"product_category">;
   const base_price = parseNum(formData.get("base_price"));
+  const vat_rate = parseNum(formData.get("vat_rate"));
   const min_order_qty = parseNum(formData.get("min_order_qty"));
   const sort_order = parseNum(formData.get("sort_order"));
   const unit = String(formData.get("unit") ?? "szt").trim() || "szt";
@@ -47,6 +48,8 @@ export async function saveProduct(
   if (!CATEGORIES.includes(category)) return { error: "Wybierz kategorię." };
   if (Number.isNaN(base_price) || base_price < 0)
     return { error: "Cena bazowa musi być liczbą ≥ 0." };
+  if (!VAT_RATES.includes(vat_rate as (typeof VAT_RATES)[number]))
+    return { error: "Wybierz poprawną stawkę VAT." };
   if (Number.isNaN(min_order_qty) || min_order_qty < 0)
     return { error: "Minimalna ilość musi być liczbą ≥ 0." };
 
@@ -74,6 +77,7 @@ export async function saveProduct(
     name,
     category,
     base_price,
+    vat_rate,
     unit,
     min_order_qty: Number.isNaN(min_order_qty) ? 1 : min_order_qty,
     sort_order: Number.isNaN(sort_order) ? 0 : sort_order,

@@ -6,7 +6,13 @@ import {
   saveProduct,
   type ProductFormState,
 } from "@/app/admin/produkty/actions";
-import { CATEGORIES, CATEGORY_LABELS, UNITS } from "@/lib/constants";
+import {
+  CATEGORIES,
+  CATEGORY_LABELS,
+  UNITS,
+  VAT_RATES,
+  DEFAULT_VAT_RATE,
+} from "@/lib/constants";
 import type { Tables } from "@/lib/database.types";
 import { Card, Field, Input, Select, Textarea, btnSecondary } from "./ui";
 import { SubmitButton } from "./submit-button";
@@ -72,8 +78,8 @@ export function ProductForm({ product }: { product?: Tables<"products"> }) {
           </Field>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Cena bazowa (zł)" htmlFor="base_price">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Cena bazowa netto (zł)" htmlFor="base_price">
             <Input
               id="base_price"
               name="base_price"
@@ -83,6 +89,19 @@ export function ProductForm({ product }: { product?: Tables<"products"> }) {
               defaultValue={product?.base_price ?? ""}
               placeholder="0,00"
             />
+          </Field>
+          <Field label="Stawka VAT" htmlFor="vat_rate">
+            <Select
+              id="vat_rate"
+              name="vat_rate"
+              defaultValue={String(product?.vat_rate ?? DEFAULT_VAT_RATE)}
+            >
+              {VAT_RATES.map((v) => (
+                <option key={v} value={v}>
+                  {v}%
+                </option>
+              ))}
+            </Select>
           </Field>
           <Field
             label="Min. ilość"

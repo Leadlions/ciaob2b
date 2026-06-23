@@ -233,6 +233,7 @@ export type Database = {
           pdf_url: string | null
           sort_order: number
           unit: string
+          vat_rate: number
         }
         Insert: {
           base_price?: number
@@ -247,6 +248,7 @@ export type Database = {
           pdf_url?: string | null
           sort_order?: number
           unit?: string
+          vat_rate?: number
         }
         Update: {
           base_price?: number
@@ -261,6 +263,7 @@ export type Database = {
           pdf_url?: string | null
           sort_order?: number
           unit?: string
+          vat_rate?: number
         }
         Relationships: []
       }

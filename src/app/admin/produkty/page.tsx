@@ -4,6 +4,7 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   formatPrice,
+  grossFromNet,
 } from "@/lib/constants";
 import {
   Badge,
@@ -88,7 +89,9 @@ export default async function ProductsPage({
               <tr>
                 <th className="px-4 py-3 font-medium">Produkt</th>
                 <th className="px-4 py-3 font-medium">Kategoria</th>
-                <th className="px-4 py-3 font-medium">Cena bazowa</th>
+                <th className="px-4 py-3 font-medium">Netto</th>
+                <th className="px-4 py-3 font-medium">VAT</th>
+                <th className="px-4 py-3 font-medium">Brutto</th>
                 <th className="px-4 py-3 font-medium">Min.</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3"></th>
@@ -116,6 +119,10 @@ export default async function ProductsPage({
                     {CATEGORY_LABELS[p.category]}
                   </td>
                   <td className="px-4 py-3">{formatPrice(p.base_price)}</td>
+                  <td className="px-4 py-3 text-foreground/60">{p.vat_rate}%</td>
+                  <td className="px-4 py-3 font-medium">
+                    {formatPrice(grossFromNet(p.base_price, p.vat_rate))}
+                  </td>
                   <td className="px-4 py-3 text-foreground/70">
                     {p.min_order_qty} {p.unit}
                   </td>
