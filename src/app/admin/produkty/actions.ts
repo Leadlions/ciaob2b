@@ -9,6 +9,13 @@ import { VAT_RATES, UNITS } from "@/lib/constants";
 
 export type ProductFormState = { error: string | null };
 
+// Odśwież listę admina ORAZ wszystkie strony klienta (katalog, karty, kreator),
+// żeby zmiany cen/produktów były od razu widoczne także w panelu klienta.
+function revalidateCatalog() {
+  revalidatePath("/admin/produkty");
+  revalidatePath("/panel", "layout");
+}
+
 function parseNum(value: FormDataEntryValue | null): number {
   const n = Number(String(value ?? "").replace(",", ".").trim());
   return Number.isFinite(n) ? n : NaN;
@@ -101,7 +108,7 @@ export async function saveProduct(
 
   if (error) return { error: `Nie udało się zapisać: ${error.message}` };
 
-  revalidatePath("/admin/produkty");
+  revalidateCatalog();
   redirect("/admin/produkty");
 }
 
@@ -142,7 +149,7 @@ export async function bulkUpdateProducts(
       .update({ category: slug })
       .in("id", ids);
     if (error) return { error: `Nie udało się zapisać: ${error.message}` };
-    revalidatePath("/admin/produkty");
+    revalidateCatalog();
     return { error: null, ok: `Przypisano kategorię dla ${ids.length} produktów.` };
   }
 
@@ -152,7 +159,7 @@ export async function bulkUpdateProducts(
       .update({ is_active: op === "activate" })
       .in("id", ids);
     if (error) return { error: `Nie udało się zapisać: ${error.message}` };
-    revalidatePath("/admin/produkty");
+    revalidateCatalog();
     return {
       error: null,
       ok: `${op === "activate" ? "Aktywowano" : "Dezaktywowano"} ${ids.length} produktów.`,
@@ -168,7 +175,7 @@ export async function bulkUpdateProducts(
       .update({ unit })
       .in("id", ids);
     if (error) return { error: `Nie udało się zapisać: ${error.message}` };
-    revalidatePath("/admin/produkty");
+    revalidateCatalog();
     return { error: null, ok: `Ustawiono jednostkę „${unit}" dla ${ids.length} produktów.` };
   }
 
@@ -183,7 +190,7 @@ export async function bulkUpdateProducts(
       .update({ min_order_qty: value })
       .in("id", ids);
     if (error) return { error: `Nie udało się zapisać: ${error.message}` };
-    revalidatePath("/admin/produkty");
+    revalidateCatalog();
     return { error: null, ok: `Ustawiono min. ilość ${value} dla ${ids.length} produktów.` };
   }
 
@@ -195,7 +202,7 @@ export async function bulkUpdateProducts(
       .update({ vat_rate: value })
       .in("id", ids);
     if (error) return { error: `Nie udało się zapisać: ${error.message}` };
-    revalidatePath("/admin/produkty");
+    revalidateCatalog();
     return { error: null, ok: `Ustawiono VAT ${value}% dla ${ids.length} produktów.` };
   }
 
@@ -219,7 +226,7 @@ export async function bulkUpdateProducts(
     await supabase.from("products").update({ base_price: next }).eq("id", r.id);
   }
 
-  revalidatePath("/admin/produkty");
+  revalidateCatalog();
   return { error: null, ok: `Zaktualizowano ceny ${rows.length} produktów.` };
 }
 
@@ -228,5 +235,5 @@ export async function toggleProductActive(formData: FormData) {
   const next = formData.get("next") === "true";
   const supabase = await createClient();
   await supabase.from("products").update({ is_active: next }).eq("id", id);
-  revalidatePath("/admin/produkty");
+  revalidateCatalog();
 }
