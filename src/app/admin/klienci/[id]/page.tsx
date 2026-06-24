@@ -9,8 +9,10 @@ import {
   btnPrimary,
 } from "@/components/ui";
 import { ClientForm } from "@/components/client-form";
+import { ClientPricesBulk } from "@/components/client-prices-bulk";
 import { PendingButton } from "@/components/pending-button";
 import { formatPrice } from "@/lib/constants";
+import { getCategories } from "@/lib/categories";
 import { setClientPrice, removeClientPrice } from "../actions";
 
 export default async function EditClientPage({
@@ -21,15 +23,20 @@ export default async function EditClientPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: client }, { data: users }, { data: products }, { data: prices }] =
+  const [{ data: client }, { data: users }, { data: products }, { data: prices }, categories] =
     await Promise.all([
       supabase.from("clients").select("*").eq("id", id).single(),
       supabase.from("profiles").select("full_name, email").eq("client_id", id),
-      supabase.from("products").select("id, name, base_price").order("name"),
+      supabase
+        .from("products")
+        .select("id, name, base_price, category")
+        .eq("is_active", true)
+        .order("name"),
       supabase
         .from("client_prices")
         .select("id, product_id, custom_price")
         .eq("client_id", id),
+      getCategories(supabase),
     ]);
 
   if (!client) notFound();
@@ -37,6 +44,16 @@ export default async function EditClientPage({
   const productMap = new Map(
     (products ?? []).map((p) => [p.id, p]),
   );
+  const customByProduct = new Map(
+    (prices ?? []).map((pr) => [pr.product_id, pr.custom_price]),
+  );
+  const bulkProducts = (products ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    category: p.category,
+    base_price: p.base_price,
+    custom: customByProduct.get(p.id) ?? null,
+  }));
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -138,6 +155,22 @@ export default async function EditClientPage({
             </PendingButton>
           </form>
         </Card>
+      </div>
+
+      {/* Masowe ustawianie cen indywidualnych */}
+      <div className="mt-8 max-w-3xl">
+        <h2 className="mb-1 text-lg font-semibold">
+          Masowe ustawianie cen indywidualnych
+        </h2>
+        <p className="mb-4 text-sm text-foreground/60">
+          Zaznacz produkty (lub całą kategorię) i ustaw zbiorczo: rabat % od ceny
+          bazowej, taniej o kwotę, stałą cenę albo usuń ceny indywidualne.
+        </p>
+        <ClientPricesBulk
+          clientId={client.id}
+          products={bulkProducts}
+          categories={categories}
+        />
       </div>
 
       {/* Przypisani użytkownicy */}
