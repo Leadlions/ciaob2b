@@ -1,19 +1,12 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  PageHeader,
-  Card,
-  Field,
-  Input,
-  Select,
-  btnPrimary,
-} from "@/components/ui";
+import { PageHeader, Card } from "@/components/ui";
 import { ClientForm } from "@/components/client-form";
 import { ClientPricesBulk } from "@/components/client-prices-bulk";
 import { PendingButton } from "@/components/pending-button";
 import { formatPrice } from "@/lib/constants";
 import { getCategories } from "@/lib/categories";
-import { setClientPrice, removeClientPrice } from "../actions";
+import { removeClientPrice } from "../actions";
 
 export default async function EditClientPage({
   params,
@@ -117,44 +110,6 @@ export default async function EditClientPage({
           )}
         </Card>
 
-        {/* Dodanie ceny */}
-        <Card>
-          <form
-            action={setClientPrice}
-            className="flex flex-wrap items-end gap-3"
-          >
-            <input type="hidden" name="client_id" value={client.id} />
-            <div className="min-w-[200px] flex-1">
-              <Field label="Produkt" htmlFor="cp_product">
-                <Select id="cp_product" name="product_id" defaultValue="" required>
-                  <option value="" disabled>
-                    Wybierz produkt…
-                  </option>
-                  {(products ?? []).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({formatPrice(p.base_price)})
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
-            <div className="w-32">
-              <Field label="Cena (zł)" htmlFor="cp_price">
-                <Input
-                  id="cp_price"
-                  name="custom_price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                />
-              </Field>
-            </div>
-            <PendingButton className={btnPrimary} pendingText="Zapisywanie…">
-              Ustaw cenę
-            </PendingButton>
-          </form>
-        </Card>
       </div>
 
       {/* Masowe ustawianie cen indywidualnych */}
